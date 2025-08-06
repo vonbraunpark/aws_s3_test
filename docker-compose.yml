@@ -1,0 +1,19 @@
+# Docker Compose가 지원할 버전 설정 (3.7도 무난함)
+version: "3.8"
+
+# 여기서 컨테이너 서비스들을 정의할 수 있음
+services:
+  # 서비스 이름을  react-s3-experiment(react s3 실험) 이라고 지었음
+  react-s3-experiment:
+    # Github Actions를 사용해서 빌드하여 GHCR에 저장할 Docker Container의 이름
+    # 여기서 GITHUB_ACTOR는 여러분들 자신임.
+    image: ghcr.io/${GITHUB_ACTOP}/react-s3-experiment:latest
+    # Docker가 Container를 실행할 때 붙이는 이름
+    container_name: react-s3-experiment-container
+    # 앞서 nginx가 80번 포트로 구동하고 있었는데
+    # 외부에서 노출할 때 3000번 포트로 구동하도록 만듬
+    # 그러므로 이 서비스 3000번 포트로 동작함
+    ports:
+      - "3000:80"
+    # Container가 불의의 사고로 종료되었을 경우 다시 시작함.
+    restart: always
