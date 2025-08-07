@@ -1,12 +1,12 @@
-name: React-s3-Test CD (Continuous Deploy)
+name: React-S3-Test CD (Continuous Deploy)
 
-on:
+on: 
   push:
     branches:
       - main
 
 env:
-  DOCKER_IMAGE: ghcr.io/${{ github.actor }}/react-s3-experiment:latest
+  DOCKER_IMAGE: ghcr.io/${{ secrets.ACTOR }}/react-s3-experiment:latest
 
 jobs:
   build:
@@ -21,29 +21,29 @@ jobs:
           echo "${{ secrets.ENV_PRODUCTION }}" > .env
 
       - name: Build and Push Docker Image
-        run:
+        run: |
           echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
           docker buildx create --name builder --use
           docker buildx build --platform linux/amd64,linux/arm64 \
             -t ${{ env.DOCKER_IMAGE }} --push .
           docker logout
 
-deploy:
-  name: Deploy to Production
-  needs: build
-  runs-on: [ self-hosted, deploy-s3-frontend ]
-  steps:
-    - name: Deploy to Production
-      run: |
-       echo "ready for deploy"
+  deploy:
+    name: Deploy to Production
+    needs: build
+    runs-on: [ self-hosted, deploy-s3-frontend ]
+    steps:
+      - name: Deploy to Production
+        run: |
+          echo "ready for deploy"
 
-       cd /home/ec2-user/s3-experiment/react
-       docker-compose dowm
+          cd /home/ec2-user/s3-experiment/react
+          docker-compose down
 
-        echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-        docker pull ${{ env.DOCKER_IMAGE }}
+          echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ secrets.ACTOR }}
+          docker pull ${{ env.DOCKER_IMAGE }}
 
-        docker image prune -f
-        docker logout
+          docker image prune -f
+          docker logout
 
-        docker-compose up -d
+          docker-compose up -d
