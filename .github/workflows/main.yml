@@ -1,9 +1,15 @@
-name: React-S3-Test CD (Continuous Deploy)
+name: CD (Continuous Deploy)
 
-on: 
+on:
   push:
     branches:
       - main
+  workflow_dispatch:
+    inputs:
+      triggered_by:
+        description: 'Who triggered the deployment?'
+        required: false
+        default: 'Manual Trigger'
 
 env:
   DOCKER_IMAGE: ghcr.io/${{ secrets.ACTOR }}/react-s3-experiment:latest
@@ -16,8 +22,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Create .env for CD
-        run:
+      - name: Create .env for Continuous Deploy
+        run: |
           echo "${{ secrets.ENV_PRODUCTION }}" > .env
 
       - name: Build and Push Docker Image
@@ -40,7 +46,7 @@ jobs:
           cd /home/ec2-user/s3-experiment/react
           docker-compose down
 
-          echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ secrets.ACTOR }}
+          echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ secrets.ACTOR }} --password-stdin
           docker pull ${{ env.DOCKER_IMAGE }}
 
           docker image prune -f
